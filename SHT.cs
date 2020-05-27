@@ -21,20 +21,9 @@ namespace SHT
             Icon = Resources.AppIcon;
             UsbHid = new HID(this.Handle);
         }
-
-        private void SHT_Load(object sender, EventArgs e)
+        private void fill_view()
         {
-            // Set to details view.
-            HidDevices.View = View.Details;
-            // Add a column with width 20 and left alignment.
-            HidDevices.Columns.Add("No");
-            HidDevices.Columns.Add("Name");
-            HidDevices.Columns.Add("Procuder");
-            HidDevices.Columns.Add("Vid");
-            HidDevices.Columns.Add("Pid");
-            HidDevices.Columns.Add("Input");
-            HidDevices.Columns.Add("Output");
-
+            HidDevices.Items.Clear();
             int i = 1;
             foreach (Hid_Devices Hd in UsbHid.HidDevices)
             {
@@ -53,6 +42,21 @@ namespace SHT
             }
             HidDevices.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
         }
+        private void SHT_Load(object sender, EventArgs e)
+        {
+            // Set to details view.
+            HidDevices.View = View.Details;
+            // Add a column with width 20 and left alignment.
+            HidDevices.Columns.Add("No");
+            HidDevices.Columns.Add("Name");
+            HidDevices.Columns.Add("Procuder");
+            HidDevices.Columns.Add("Vid");
+            HidDevices.Columns.Add("Pid");
+            HidDevices.Columns.Add("Input");
+            HidDevices.Columns.Add("Output");
+
+            fill_view();
+        }
         #endregion
         #region "WndProc() "
         //Constant definitions for certain WM_DEVICECHANGE messages
@@ -70,7 +74,12 @@ namespace SHT
                 //Device Add or Remove
                 if (((int)m.WParam == DBT_DEVICEARRIVAL) || ((int)m.WParam == DBT_DEVICEREMOVEPENDING) || ((int)m.WParam == DBT_DEVICEREMOVECOMPLETE) || ((int)m.WParam == DBT_CONFIGCHANGED))
                 {
-
+                    UsbHid.GetHidUSBDevices();
+                    fill_view();
+                    SendGroup.Enabled = false;
+                    Logs.Clear();
+                    ReadThread_Stop();
+                    send_data.Clear();
                 }
             } //end of: if(m.Msg == WM_DEVICECHANGE)
 
@@ -86,18 +95,24 @@ namespace SHT
             abt.ShowDialog();
         }
         BackgroundWorker ReadThread;
-        private void HidDevices_SelectedIndexChanged(object sender, EventArgs e)
+        private void ReadThread_Stop()
         {
-            if (HidDevices.SelectedItems.Count < 1) return;
             if (ReadThread != null)
             {
                 ReadThread.CancelAsync();
                 ReadThread.Dispose();
+                SelectedHid.ReadHandle = null;
             }
             UsbHid.HidReadCancel(ref SelectedHid);
             ReadThread = new BackgroundWorker();
             ReadThread.WorkerSupportsCancellation = true;
             ReadThread.DoWork += ReadThread_DoWork;
+        }
+        private void HidDevices_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (HidDevices.SelectedItems.Count < 1) return;
+
+            ReadThread_Stop();
 
             SelectedHid = UsbHid.HidDevices[HidDevices.Items.IndexOf(HidDevices.SelectedItems[0])];
             SendGroup.Enabled = !SelectedHid.WriteHandle.IsClosed;

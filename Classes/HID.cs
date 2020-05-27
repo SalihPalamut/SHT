@@ -285,7 +285,7 @@ namespace SHT
             //Get All Hid Devices
             GetHidUSBDevices();
         }
-        private bool GetHidUSBDevices()
+        public bool GetHidUSBDevices()
         {
             /* 
            Before we can "connect" our application to our USB embedded device, we must first find the device.
