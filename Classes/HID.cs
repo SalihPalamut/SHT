@@ -236,6 +236,9 @@ namespace SHT
             uint nNumberOfBytesToRead,
             ref uint lpNumberOfBytesRead,
             IntPtr lpOverlapped);
+        //Uses a handle (created with CreateFile()), and lets us read USB data from the device.
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Unicode)]
+        static extern bool CancelIoEx(SafeFileHandle hFile, IntPtr lpOverlapped);
         #endregion
 
         #region "User Definations"
@@ -320,7 +323,14 @@ namespace SHT
            Getting the device path is a multi-step round about process, which requires calling several of the
            SetupDixxx() functions provided by setupapi.dll.
            */
-
+            if (HidDevices.Count > 0)
+            {
+                foreach (Hid_Devices Hd in HidDevices)
+                {
+                    if (!Hd.WriteHandle.IsClosed) Hd.WriteHandle.Close();
+                    if (!Hd.ReadHandle.IsClosed) Hd.ReadHandle.Close();
+                }
+            }
             HidDevices.Clear();
             string DevicePath = "";
 
@@ -408,6 +418,9 @@ namespace SHT
                             ErrorStatusRead = (uint)Marshal.GetLastWin32Error();
                             if ((ErrorStatusWrite == ERROR_SUCCESS) && (ErrorStatusRead == ERROR_SUCCESS))
                             {
+                                HidDev.AttachedState = true;       //Let the rest of the PC application know the USB device is connected, and it is safe to read/write to it
+                                HidDev.AttachedButBroken = false;
+
                                 HidDev.Caps = new HIDP_CAPS();
                                 IntPtr preparsedData = new IntPtr();
                                 HidD_GetPreparsedData(HidDev.WriteHandle, ref preparsedData);
@@ -469,6 +482,67 @@ namespace SHT
                 return false;
             }
 
+        }
+
+        //--------------------------------------------------------------------------------------------------------------------------
+        //FUNCTION:	ReadFileManagedBuffer()
+        //PURPOSE:	Wrapper function to call ReadFile()
+        //
+        //INPUT:	Uses managed versions of the same input parameters as ReadFile() uses.
+        //
+        //OUTPUT:	Returns boolean indicating if the function call was successful or not.
+        //          Also returns data in the byte[] INBuffer, and the number of bytes read. 
+        //
+        //Notes:    Wrapper function used to call the ReadFile() function.  ReadFile() takes a pointer to an unmanaged buffer and deposits
+        //          the bytes read into the buffer.  However, can't pass a pointer to a managed buffer directly to ReadFile().
+        //          This ReadFileManagedBuffer() is a wrapper function to make it so application code can call ReadFile() easier
+        //          by specifying a managed buffer.
+        //--------------------------------------------------------------------------------------------------------------------------
+        private unsafe bool ReadFileManagedBuffer(SafeFileHandle hFile, byte[] INBuffer, uint nNumberOfBytesToRead, ref uint lpNumberOfBytesRead, IntPtr lpOverlapped)
+        {
+            IntPtr pINBuffer = IntPtr.Zero;
+
+            try
+            {
+                pINBuffer = Marshal.AllocHGlobal((int)nNumberOfBytesToRead);    //Allocate some unmanged RAM for the receive data buffer.
+
+                if (ReadFile(hFile, pINBuffer, nNumberOfBytesToRead, ref lpNumberOfBytesRead, lpOverlapped))
+                {
+                    Marshal.Copy(pINBuffer, INBuffer, 0, (int)lpNumberOfBytesRead);    //Copy over the data from unmanged memory into the managed byte[] INBuffer
+                    Marshal.FreeHGlobal(pINBuffer);
+                    return true;
+                }
+                else
+                {
+                    Marshal.FreeHGlobal(pINBuffer);
+                    return false;
+                }
+
+            }
+            catch
+            {
+                if (pINBuffer != IntPtr.Zero)
+                {
+                    Marshal.FreeHGlobal(pINBuffer);
+                }
+                return false;
+            }
+        }
+        public bool HidRead(ref Hid_Devices HidDev)
+        {
+            uint BytesRead = 0;
+            return ReadFileManagedBuffer(HidDev.ReadHandle, HidDev.ReadBuffer, (uint)HidDev.Caps.InputReport, ref BytesRead, IntPtr.Zero);
+        }
+        public bool HidReadCancel(ref Hid_Devices HidDev)
+        {
+            if (HidDev.ReadHandle == null) return false;
+            return CancelIoEx(HidDev.ReadHandle, IntPtr.Zero);
+        }
+        public bool HidWrite(Hid_Devices HidDev, byte[] OUTBuffer)
+        {
+            uint BytesWritten = 0;
+            WriteFile(HidDev.WriteHandle, OUTBuffer, (uint)HidDev.Caps.OutputReport, ref BytesWritten, IntPtr.Zero);
+            return HidDev.Caps.OutputReport == BytesWritten;
         }
     }
 }
