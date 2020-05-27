@@ -15,5 +15,10 @@ namespace SHT
             InitializeComponent();
             Icon = Properties.Resources.AppIcon;
         }
+
+        private void about_txt_LinkClicked(object sender, LinkClickedEventArgs e)
+        {
+            System.Diagnostics.Process.Start(e.LinkText);
+        }
     }
 }

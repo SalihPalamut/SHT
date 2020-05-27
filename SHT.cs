@@ -127,6 +127,7 @@ namespace SHT
         private void send_data_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (e.KeyChar == 8) return;
+
             if (SndHex.Checked)
             {
                 if (send_data.TextLength >= (SelectedHid.Caps.OutputReport - 1) * 3 + 2)
@@ -145,36 +146,61 @@ namespace SHT
             {
                 if (send_data.TextLength > SelectedHid.Caps.OutputReport) e.Handled = true;
             }
+
+
         }
 
         private void SndHex_CheckedChanged(object sender, EventArgs e)
         {
             send_data.Text = "";
+            append.Enabled = !SndHex.Checked;
         }
 
         private void send_Click(object sender, EventArgs e)
         {
-            if (SelectedHid.Caps.OutputReport < 1) return;
-            byte[] data = new byte[SelectedHid.Caps.OutputReport];
+            short Length = SelectedHid.Caps.OutputReport;
+
+            if (Length < 1) return;
+
+            byte[] data = new byte[Length];
             data[0] = 0;
+
             if (SndHex.Checked)
             {
                 string[] split = send_data.Text.Split(' ');
                 int i = 0;
-                if (split.Length < SelectedHid.Caps.OutputReport)
+
+                if (split.Length < Length)
                     i = 1;
+
                 foreach (string hex in split)
                 {
-                    data[i++] = Convert.ToByte(hex, 16);
+                    if (hex.Length < 3 && hex.Length > 0)
+                        data[i++] = Convert.ToByte(hex, 16);
                 }
             }
             else
             {
-                int j = 0;
-                if (send_data.TextLength < SelectedHid.Caps.OutputReport)
+                int j = 0,n= Length;
+                if (send_data.Text.Length < Length)
+                {
                     j = 1;
-                for (int i = 0; i < SelectedHid.Caps.OutputReport - j; i++)
+                    n = send_data.Text.Length;
+                }
+   
+                for (int i = 0; i < n; i++)
                     data[i + j] = (byte)send_data.Text[i];
+
+                if (CR.Checked && LF.Checked)
+                {
+                    data[Length - 2] = (byte)'\r';
+                    data[Length - 1] = (byte)'\n';
+                }
+                else
+                {
+                    if (CR.Checked) data[Length - 1] = (byte)'\r';
+                    if (LF.Checked) data[Length - 1] = (byte)'\n';
+                }
             }
             UsbHid.HidWrite(SelectedHid, data);
         }
@@ -200,8 +226,9 @@ namespace SHT
             else
             {
                 Logs.Text += Label + " : ";
+                string format = RcvHex.Checked ? "0x{0:X2} " : "{0}";
                 for (int i = 1; i < array.Length; i++)
-                    Logs.Text += String.Format("0x{0:X2}", array[i]) + " ";
+                    Logs.Text += String.Format(format, array[i]);
                 Logs.Text += "\n";
             }
         }
@@ -288,6 +315,23 @@ namespace SHT
             //-------------------------------------------------------END CUT AND PASTE BLOCK-------------------------------------------------------------------------------------
             //-------------------------------------------------------------------------------------------------------------------------------------------------------------------
         }
+        private void send_data_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                send.PerformClick();
+            }
+        }
 
+        private void send_data_KeyUp(object sender, KeyEventArgs e)
+        {
+
+        }
+
+        private void Logs_TextChanged(object sender, EventArgs e)
+        {
+            Logs.Focus();
+            Logs.Select(Logs.Text.Length, 0);
+        }
     }
 }

@@ -48,21 +48,24 @@
             this.about_txt.BackColor = System.Drawing.SystemColors.ButtonFace;
             this.about_txt.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.about_txt.Dock = System.Windows.Forms.DockStyle.Right;
+            this.about_txt.Font = new System.Drawing.Font("Microsoft Sans Serif", 10.15F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(162)));
             this.about_txt.ImeMode = System.Windows.Forms.ImeMode.NoControl;
-            this.about_txt.Location = new System.Drawing.Point(147, 0);
+            this.about_txt.Location = new System.Drawing.Point(146, 0);
             this.about_txt.Name = "about_txt";
             this.about_txt.ReadOnly = true;
             this.about_txt.ShortcutsEnabled = false;
-            this.about_txt.Size = new System.Drawing.Size(151, 150);
+            this.about_txt.Size = new System.Drawing.Size(253, 150);
             this.about_txt.TabIndex = 2;
             this.about_txt.TabStop = false;
-            this.about_txt.Text = "";
+            this.about_txt.Text = "Simple Hid Terminal\n\nSLHTech®\nCopy © 2020\n\nmailto:palamutsalih@gmail.com\nhttps://" +
+    "github.com/SalihPalamut/SHT";
+            this.about_txt.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.about_txt_LinkClicked);
             // 
             // About
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(298, 150);
+            this.ClientSize = new System.Drawing.Size(399, 150);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.about_txt);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
