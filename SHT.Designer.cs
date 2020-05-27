@@ -34,21 +34,18 @@
             this.send = new System.Windows.Forms.Button();
             this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.SndHex = new System.Windows.Forms.RadioButton();
-            this.HidDevices = new System.Windows.Forms.ListBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.Recive = new System.Windows.Forms.GroupBox();
             this.panel1 = new System.Windows.Forms.Panel();
             this.RcvHex = new System.Windows.Forms.RadioButton();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
-            this.info = new System.Windows.Forms.Label();
+            this.HidDevices = new System.Windows.Forms.ListView();
             this.groupBox1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
-            this.groupBox3.SuspendLayout();
             this.Recive.SuspendLayout();
             this.panel1.SuspendLayout();
             this.SuspendLayout();
@@ -129,16 +126,6 @@
             this.SndHex.Text = "HEX";
             this.SndHex.UseVisualStyleBackColor = true;
             // 
-            // HidDevices
-            // 
-            this.HidDevices.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.HidDevices.FormattingEnabled = true;
-            this.HidDevices.Location = new System.Drawing.Point(2, 15);
-            this.HidDevices.Margin = new System.Windows.Forms.Padding(2);
-            this.HidDevices.Name = "HidDevices";
-            this.HidDevices.Size = new System.Drawing.Size(308, 228);
-            this.HidDevices.TabIndex = 3;
-            // 
             // menuStrip1
             // 
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -168,7 +155,6 @@
             // groupBox2
             // 
             this.groupBox2.Controls.Add(this.HidDevices);
-            this.groupBox2.Controls.Add(this.groupBox3);
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
             this.groupBox2.Location = new System.Drawing.Point(0, 24);
             this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
@@ -178,19 +164,6 @@
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "HID Devices";
-            // 
-            // groupBox3
-            // 
-            this.groupBox3.Controls.Add(this.info);
-            this.groupBox3.Dock = System.Windows.Forms.DockStyle.Right;
-            this.groupBox3.Location = new System.Drawing.Point(310, 15);
-            this.groupBox3.Margin = new System.Windows.Forms.Padding(2);
-            this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox3.Size = new System.Drawing.Size(155, 228);
-            this.groupBox3.TabIndex = 4;
-            this.groupBox3.TabStop = false;
-            this.groupBox3.Text = "Info";
             // 
             // Recive
             // 
@@ -241,15 +214,16 @@
             this.radioButton2.Text = "TEXT";
             this.radioButton2.UseVisualStyleBackColor = true;
             // 
-            // info
+            // HidDevices
             // 
-            this.info.AutoSize = true;
-            this.info.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.info.Location = new System.Drawing.Point(2, 15);
-            this.info.Name = "info";
-            this.info.Size = new System.Drawing.Size(65, 52);
-            this.info.TabIndex = 0;
-            this.info.Text = "Vid : \r\nPid :\r\nInp Report :\r\nOut Report :\r\n";
+            this.HidDevices.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.HidDevices.FullRowSelect = true;
+            this.HidDevices.HideSelection = false;
+            this.HidDevices.Location = new System.Drawing.Point(2, 15);
+            this.HidDevices.Name = "HidDevices";
+            this.HidDevices.Size = new System.Drawing.Size(463, 228);
+            this.HidDevices.TabIndex = 0;
+            this.HidDevices.UseCompatibleStateImageBehavior = false;
             // 
             // SHT
             // 
@@ -271,8 +245,6 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
-            this.groupBox3.ResumeLayout(false);
-            this.groupBox3.PerformLayout();
             this.Recive.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
@@ -289,17 +261,15 @@
         private System.Windows.Forms.Button send;
         private System.Windows.Forms.RadioButton radioButton1;
         private System.Windows.Forms.RadioButton SndHex;
-        private System.Windows.Forms.ListBox HidDevices;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.GroupBox Recive;
         private System.Windows.Forms.Panel panel1;
         private System.Windows.Forms.RadioButton RcvHex;
         private System.Windows.Forms.RadioButton radioButton2;
-        private System.Windows.Forms.Label info;
+        private System.Windows.Forms.ListView HidDevices;
     }
 }
 

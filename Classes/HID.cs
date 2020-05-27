@@ -102,7 +102,13 @@ namespace SHT
 
         //DLL Imports.  Need these to access various C style unmanaged functions contained in their respective DLL files.
         //--------------------------------------------------------------------------------------------------------------
-
+        // HidD_GetManufacturerString
+        [DllImport("hid.dll", SetLastError = true)]
+        public static extern Boolean HidD_GetManufacturerString(
+            SafeFileHandle HidDeviceObject,
+            [MarshalAs( UnmanagedType.LPWStr )]
+        StringBuilder Buffer,
+            UInt32 BufferLength);
         // HidD_GetSerialNumberString
         [DllImport("hid.dll", SetLastError = true)]
         public static extern Boolean HidD_GetSerialNumberString(
@@ -110,7 +116,7 @@ namespace SHT
             [MarshalAs( UnmanagedType.LPWStr )]
         StringBuilder Buffer,
             UInt32 BufferLength);
-
+        // HidD_GetProductString
         [DllImport("hid.dll", SetLastError = true)]
         public static extern Boolean HidD_GetProductString(
             SafeFileHandle HidDeviceObject,
@@ -237,6 +243,7 @@ namespace SHT
         {
             internal String DevicePath;
             internal string DeviceName;
+            internal string DeviceManufacturer;
             internal string SerialNumber;
             internal HIDD_ATTRIBUTES Attributes;
             internal HIDP_CAPS Caps;
@@ -408,18 +415,19 @@ namespace SHT
                                 HidD_FreePreparsedData(ref preparsedData);
                                 HidD_GetAttributes(HidDev.WriteHandle, ref HidDev.Attributes);
                                 StringBuilder Builder = new StringBuilder(253);
-                                bool success;
-                                success = HidD_GetSerialNumberString(HidDev.WriteHandle, Builder, (uint)Builder.Capacity);
+
+                                bool success = HidD_GetSerialNumberString(HidDev.WriteHandle, Builder, (uint)Builder.Capacity);
                                 if (success)
-                                {
                                     HidDev.SerialNumber = Builder.ToString();
-                                }
-                                
+
                                 success = HidD_GetProductString(HidDev.WriteHandle, Builder, (uint)Builder.Capacity);
                                 if (success)
-                                {
                                     HidDev.DeviceName = Builder.ToString();
-                                }
+
+                                success = HidD_GetManufacturerString(HidDev.WriteHandle, Builder, (uint)Builder.Capacity);
+                                if (success)
+                                    HidDev.DeviceManufacturer = Builder.ToString();
+
                             }
                             else //for some reason the device was physically plugged in, but one or both of the read/write handles didn't open successfully...
                             {
@@ -431,8 +439,8 @@ namespace SHT
                                     HidDev.ReadHandle.Close();
                             }
                             HidDev.ReadBuffer = new byte[HidDev.Caps.InputReport];
-                            if(HidDev.DeviceName!=null)
-                            HidDevices.Add(HidDev);
+                            if (HidDev.DeviceName != null)
+                                HidDevices.Add(HidDev);
                         }
                         else //Some unknown failure occurred
                         {

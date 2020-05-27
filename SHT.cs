@@ -17,16 +17,39 @@ namespace SHT
         {
             InitializeComponent();
             Icon = Resources.AppIcon;
-            UsbHid=new HID(this.Handle);
+            UsbHid = new HID(this.Handle);
         }
 
         private void SHT_Load(object sender, EventArgs e)
         {
-            foreach(Hid_Devices Hd in UsbHid.HidDevices)
+            // Set to details view.
+            HidDevices.View = View.Details;
+            // Add a column with width 20 and left alignment.
+            HidDevices.Columns.Add("No");
+            HidDevices.Columns.Add("Name");
+            HidDevices.Columns.Add("Procuder");
+            HidDevices.Columns.Add("Vid");
+            HidDevices.Columns.Add("Pid");
+            HidDevices.Columns.Add("Input");
+            HidDevices.Columns.Add("Output");
+           
+            int i = 1;
+            foreach (Hid_Devices Hd in UsbHid.HidDevices)
             {
-                
-                HidDevices.Items.Add(Hd.DeviceName);
+                ListViewItem item = new ListViewItem(new string[] 
+                {
+                    i.ToString(),
+                    Hd.DeviceName,
+                    Hd.DeviceManufacturer,
+                    String.Format("{0:X4}",Hd.Attributes.VendorID),
+                    String.Format("{0:X4}",Hd.Attributes.ProductID),
+                    (Hd.Caps.InputReport-(Hd.Caps.InputReport>0?1:0)).ToString(),//Real Size -1 , First byte must be report number
+                    (Hd.Caps.OutputReport-(Hd.Caps.OutputReport>0?1:0)).ToString()//Real Size -1 , First byte must be report number
+                });
+                HidDevices.Items.Add(item);
+                i++;
             }
+            HidDevices.AutoResizeColumns(ColumnHeaderAutoResizeStyle.ColumnContent);
         }
         #endregion
         #region "WndProc() "
@@ -45,7 +68,7 @@ namespace SHT
                 //Device Add or Remove
                 if (((int)m.WParam == DBT_DEVICEARRIVAL) || ((int)m.WParam == DBT_DEVICEREMOVEPENDING) || ((int)m.WParam == DBT_DEVICEREMOVECOMPLETE) || ((int)m.WParam == DBT_CONFIGCHANGED))
                 {
-                    
+
                 }
             } //end of: if(m.Msg == WM_DEVICECHANGE)
 
