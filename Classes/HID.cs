@@ -102,11 +102,26 @@ namespace SHT
 
         //DLL Imports.  Need these to access various C style unmanaged functions contained in their respective DLL files.
         //--------------------------------------------------------------------------------------------------------------
+
+        // HidD_GetSerialNumberString
+        [DllImport("hid.dll", SetLastError = true)]
+        public static extern Boolean HidD_GetSerialNumberString(
+            SafeFileHandle HidDeviceObject,
+            [MarshalAs( UnmanagedType.LPWStr )]
+        StringBuilder Buffer,
+            UInt32 BufferLength);
+
+        [DllImport("hid.dll", SetLastError = true)]
+        public static extern Boolean HidD_GetProductString(
+            SafeFileHandle HidDeviceObject,
+            [MarshalAs( UnmanagedType.LPWStr )]
+        StringBuilder Buffer,
+            UInt32 BufferLength);
         // HidD_GetAttributes
         [DllImport("hid.dll", SetLastError = true)]
         public static extern Boolean HidD_GetAttributes(
-            SafeFileHandle HidDeviceObject,
-            ref HIDD_ATTRIBUTES Attributes);
+              SafeFileHandle HidDeviceObject,
+              ref HIDD_ATTRIBUTES Attributes);
         //HidD_FreePreparsedData
         [DllImport("hid.dll", SetLastError = true)]
         public static extern bool HidD_FreePreparsedData(ref IntPtr PreparsedData);
@@ -217,6 +232,23 @@ namespace SHT
             IntPtr lpOverlapped);
         #endregion
 
+        #region "User Definations"
+        internal struct Hid_Devices
+        {
+            internal String DevicePath;
+            internal string DeviceName;
+            internal string SerialNumber;
+            internal HIDD_ATTRIBUTES Attributes;
+            internal HIDP_CAPS Caps;
+            internal SafeFileHandle WriteHandle;
+            internal SafeFileHandle ReadHandle;
+            internal bool AttachedState;
+            internal bool AttachedButBroken;
+            internal byte[] ReadBuffer;
+        }
+        public List<Hid_Devices> HidDevices { get; set; } = new List<Hid_Devices>();
+        Hid_Devices HidDev = new Hid_Devices();
+        #endregion
         public HID(IntPtr Handle)
 
         {
@@ -240,6 +272,195 @@ namespace SHT
             pDeviceBroadcastHeader = Marshal.AllocHGlobal(Marshal.SizeOf(DeviceBroadcastHeader)); //allocate memory for a new DEV_BROADCAST_DEVICEINTERFACE structure, and return the address 
             Marshal.StructureToPtr(DeviceBroadcastHeader, pDeviceBroadcastHeader, false);  //Copies the DeviceBroadcastHeader structure into the memory already allocated at DeviceBroadcastHeaderWithPointer
             RegisterDeviceNotification(Handle, pDeviceBroadcastHeader, DEVICE_NOTIFY_WINDOW_HANDLE);
+            //Get All Hid Devices
+            GetHidUSBDevices();
+        }
+        private bool GetHidUSBDevices()
+        {
+            /* 
+           Before we can "connect" our application to our USB embedded device, we must first find the device.
+           A USB bus can have many devices simultaneously connected, so somehow we have to find our device only.
+           This is done with the Vendor ID (VID) and Product ID (PID).  Each USB product line should have
+           a unique combination of VID and PID.  
+
+           Microsoft has created a number of functions which are useful for finding plug and play devices.  Documentation
+           for each function used can be found in the MSDN library.  We will be using the following functions (unmanaged C functions):
+
+           SetupDiGetClassDevs()					//provided by setupapi.dll, which comes with Windows
+           SetupDiEnumDeviceInterfaces()			//provided by setupapi.dll, which comes with Windows
+           GetLastError()							//provided by kernel32.dll, which comes with Windows
+           SetupDiDestroyDeviceInfoList()			//provided by setupapi.dll, which comes with Windows
+           SetupDiGetDeviceInterfaceDetail()		//provided by setupapi.dll, which comes with Windows
+           SetupDiGetDeviceRegistryProperty()		//provided by setupapi.dll, which comes with Windows
+           CreateFile()							//provided by kernel32.dll, which comes with Windows
+
+           In order to call these unmanaged functions, the Marshal class is very useful.
+
+           We will also be using the following unusual data types and structures.  Documentation can also be found in
+           the MSDN library:
+
+           PSP_DEVICE_INTERFACE_DATA
+           PSP_DEVICE_INTERFACE_DETAIL_DATA
+           SP_DEVINFO_DATA
+           HDEVINFO
+           HANDLE
+           GUID
+
+           The ultimate objective of the following code is to get the device path, which will be used elsewhere for getting
+           read and write handles to the USB device.  Once the read/write handles are opened, only then can this
+           PC application begin reading/writing to the USB device using the WriteFile() and ReadFile() functions.
+
+           Getting the device path is a multi-step round about process, which requires calling several of the
+           SetupDixxx() functions provided by setupapi.dll.
+           */
+
+            HidDevices.Clear();
+            string DevicePath = "";
+
+            try
+            {
+                IntPtr DeviceInfoTable = IntPtr.Zero;
+                SP_DEVICE_INTERFACE_DATA InterfaceDataStructure = new SP_DEVICE_INTERFACE_DATA();
+                SP_DEVICE_INTERFACE_DETAIL_DATA DetailedInterfaceDataStructure = new SP_DEVICE_INTERFACE_DETAIL_DATA();
+                SP_DEVINFO_DATA DevInfoData = new SP_DEVINFO_DATA();
+
+                uint InterfaceIndex = 0;
+                uint dwRegType = 0;
+                uint dwRegSize = 0;
+                uint StructureSize = 0;
+                IntPtr PropertyValueBuffer = IntPtr.Zero;
+                uint ErrorStatus;
+                uint LoopCounter = 0;
+                //First populate a list of plugged in devices (by specifying "DIGCF_PRESENT"), which are of the specified class GUID. 
+                DeviceInfoTable = SetupDiGetClassDevs(ref InterfaceClassGuid, IntPtr.Zero, IntPtr.Zero, DIGCF_PRESENT | DIGCF_DEVICEINTERFACE);
+
+                if (DeviceInfoTable != IntPtr.Zero)
+                {
+                    //Now look through the list we just populated.  We are trying to see if any of them match our device. 
+                    while (true)
+                    {
+                        InterfaceDataStructure.cbSize = (uint)Marshal.SizeOf(InterfaceDataStructure);
+                        if (SetupDiEnumDeviceInterfaces(DeviceInfoTable, IntPtr.Zero, ref InterfaceClassGuid, InterfaceIndex, ref InterfaceDataStructure))
+                        {
+                            ErrorStatus = (uint)Marshal.GetLastWin32Error();
+                            if (ErrorStatus == ERROR_NO_MORE_ITEMS) //Did we reach the end of the list of matching devices in the DeviceInfoTable?
+                            {   //Cound not find the device.  Must not have been attached.
+                                SetupDiDestroyDeviceInfoList(DeviceInfoTable);  //Clean up the old structure we no longer need.
+                                return false;
+                            }
+                        }
+                        else    //Else some other kind of unknown error ocurred...
+                        {
+                            ErrorStatus = (uint)Marshal.GetLastWin32Error();
+                            SetupDiDestroyDeviceInfoList(DeviceInfoTable);  //Clean up the old structure we no longer need.
+                            return HidDevices.Count > 0;
+                        }
+
+                        //Now retrieve the hardware ID from the registry.  The hardware ID contains the VID and PID, which we will then 
+                        //check to see if it is the correct device or not.
+
+                        //Initialize an appropriate SP_DEVINFO_DATA structure.  We need this structure for SetupDiGetDeviceRegistryProperty().
+                        DevInfoData.cbSize = (uint)Marshal.SizeOf(DevInfoData);
+                        SetupDiEnumDeviceInfo(DeviceInfoTable, InterfaceIndex, ref DevInfoData);
+
+                        //First query for the size of the hardware ID, so we can know how big a buffer to allocate for the data.
+                        SetupDiGetDeviceRegistryProperty(DeviceInfoTable, ref DevInfoData, SPDRP_HARDWAREID, ref dwRegType, IntPtr.Zero, 0, ref dwRegSize);
+
+
+                        //Device must have been found.  In order to open I/O file handle(s), we will need the actual device path first.
+                        //We can get the path by calling SetupDiGetDeviceInterfaceDetail(), however, we have to call this function twice:  The first
+                        //time to get the size of the required structure/buffer to hold the detailed interface data, then a second time to actually 
+                        //get the structure (after we have allocated enough memory for the structure.)
+                        DetailedInterfaceDataStructure.cbSize = (uint)Marshal.SizeOf(DetailedInterfaceDataStructure);
+                        //First call populates "StructureSize" with the correct value
+                        SetupDiGetDeviceInterfaceDetail(DeviceInfoTable, ref InterfaceDataStructure, IntPtr.Zero, 0, ref StructureSize, IntPtr.Zero);
+                        //Need to call SetupDiGetDeviceInterfaceDetail() again, this time specifying a pointer to a SP_DEVICE_INTERFACE_DETAIL_DATA buffer with the correct size of RAM allocated.
+                        //First need to allocate the unmanaged buffer and get a pointer to it.
+                        IntPtr pUnmanagedDetailedInterfaceDataStructure = IntPtr.Zero;  //Declare a pointer.
+                        pUnmanagedDetailedInterfaceDataStructure = Marshal.AllocHGlobal((int)StructureSize);    //Reserve some unmanaged memory for the structure.
+                        DetailedInterfaceDataStructure.cbSize = 6; //Initialize the cbSize parameter (4 bytes for DWORD + 2 bytes for unicode null terminator)
+                        Marshal.StructureToPtr(DetailedInterfaceDataStructure, pUnmanagedDetailedInterfaceDataStructure, false); //Copy managed structure contents into the unmanaged memory buffer.
+
+                        //Now call SetupDiGetDeviceInterfaceDetail() a second time to receive the device path in the structure at pUnmanagedDetailedInterfaceDataStructure.
+                        if (SetupDiGetDeviceInterfaceDetail(DeviceInfoTable, ref InterfaceDataStructure, pUnmanagedDetailedInterfaceDataStructure, StructureSize, IntPtr.Zero, IntPtr.Zero))
+                        {
+                            //Need to extract the path information from the unmanaged "structure".  The path starts at (pUnmanagedDetailedInterfaceDataStructure + sizeof(DWORD)).
+                            IntPtr pToDevicePath = new IntPtr((uint)pUnmanagedDetailedInterfaceDataStructure.ToInt32() + 4);  //Add 4 to the pointer (to get the pointer to point to the path, instead of the DWORD cbSize parameter)
+                            DevicePath = Marshal.PtrToStringUni(pToDevicePath); //Now copy the path information into the globally defined DevicePath String.
+
+                            //We now have the proper device path, and we can finally use the path to open I/O handle(s) to the device.
+                            //SetupDiDestroyDeviceInfoList(DeviceInfoTable);	//Clean up the old structure we no longer need.
+                            Marshal.FreeHGlobal(pUnmanagedDetailedInterfaceDataStructure);  //No longer need this unmanaged SP_DEVICE_INTERFACE_DETAIL_DATA buffer.  We already extracted the path information.
+                            uint ErrorStatusWrite;
+                            uint ErrorStatusRead;
+                            HidDev.DevicePath = DevicePath;
+
+                            HidDev.WriteHandle = CreateFile(DevicePath, GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
+                            ErrorStatusWrite = (uint)Marshal.GetLastWin32Error();
+                            HidDev.ReadHandle = CreateFile(DevicePath, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, IntPtr.Zero, OPEN_EXISTING, 0, IntPtr.Zero);
+                            ErrorStatusRead = (uint)Marshal.GetLastWin32Error();
+                            if ((ErrorStatusWrite == ERROR_SUCCESS) && (ErrorStatusRead == ERROR_SUCCESS))
+                            {
+                                HidDev.Caps = new HIDP_CAPS();
+                                IntPtr preparsedData = new IntPtr();
+                                HidD_GetPreparsedData(HidDev.WriteHandle, ref preparsedData);
+                                HidP_GetCaps(preparsedData, ref HidDev.Caps);
+                                HidD_FreePreparsedData(ref preparsedData);
+                                HidD_GetAttributes(HidDev.WriteHandle, ref HidDev.Attributes);
+                                StringBuilder Builder = new StringBuilder(253);
+                                bool success;
+                                success = HidD_GetSerialNumberString(HidDev.WriteHandle, Builder, (uint)Builder.Capacity);
+                                if (success)
+                                {
+                                    HidDev.SerialNumber = Builder.ToString();
+                                }
+                                
+                                success = HidD_GetProductString(HidDev.WriteHandle, Builder, (uint)Builder.Capacity);
+                                if (success)
+                                {
+                                    HidDev.DeviceName = Builder.ToString();
+                                }
+                            }
+                            else //for some reason the device was physically plugged in, but one or both of the read/write handles didn't open successfully...
+                            {
+                                HidDev.AttachedState = false;      //Let the rest of this application known not to read/write to the device.
+                                HidDev.AttachedButBroken = true;   //Flag so that next time a WM_DEVICECHANGE message occurs, can retry to re-open read/write pipes
+                                if (ErrorStatusWrite == ERROR_SUCCESS)
+                                    HidDev.WriteHandle.Close();
+                                if (ErrorStatusRead == ERROR_SUCCESS)
+                                    HidDev.ReadHandle.Close();
+                            }
+                            HidDev.ReadBuffer = new byte[HidDev.Caps.InputReport];
+                            if(HidDev.DeviceName!=null)
+                            HidDevices.Add(HidDev);
+                        }
+                        else //Some unknown failure occurred
+                        {
+                            uint ErrorCode = (uint)Marshal.GetLastWin32Error();
+                            SetupDiDestroyDeviceInfoList(DeviceInfoTable);  //Clean up the old structure.
+                            Marshal.FreeHGlobal(pUnmanagedDetailedInterfaceDataStructure);  //No longer need this unmanaged SP_DEVICE_INTERFACE_DETAIL_DATA buffer.  We already extracted the path information.
+                            return false;
+                        }
+
+                        InterfaceIndex++;
+                        //Keep looping until we either find a device with matching VID and PID, or until we run out of devices to check.
+                        //However, just in case some unexpected error occurs, keep track of the number of loops executed.
+                        //If the number of loops exceeds a very large number, exit anyway, to prevent inadvertent infinite looping.
+                        LoopCounter++;
+                        if (LoopCounter == 10000000)    //Surely there aren't more than 10 million devices attached to any forseeable PC...
+                        {
+                            return false;
+                        }
+                    }//end of while(true)
+                }
+                return false;
+            }//end of try
+            catch
+            {
+                //Something went wrong if PC gets here.  Maybe a Marshal.AllocHGlobal() failed due to insufficient resources or something.
+                return false;
+            }
+
         }
     }
 }

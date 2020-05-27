@@ -12,16 +12,21 @@ namespace SHT
     public partial class SHT : Form
     {
         #region "Initialize"
+        HID UsbHid;
         public SHT()
         {
             InitializeComponent();
             Icon = Resources.AppIcon;
-            HID UsbHid=new HID(this.Handle);
+            UsbHid=new HID(this.Handle);
         }
 
         private void SHT_Load(object sender, EventArgs e)
         {
-
+            foreach(Hid_Devices Hd in UsbHid.HidDevices)
+            {
+                
+                HidDevices.Items.Add(Hd.DeviceName);
+            }
         }
         #endregion
         #region "WndProc() "
