@@ -21,5 +21,11 @@ namespace SHT
         {
 
         }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            About abt = new About();
+            abt.ShowDialog();
+        }
     }
 }
