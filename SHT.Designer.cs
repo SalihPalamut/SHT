@@ -31,9 +31,14 @@
             this.Logs = new System.Windows.Forms.RichTextBox();
             this.send_data = new System.Windows.Forms.TextBox();
             this.SendGroup = new System.Windows.Forms.GroupBox();
+            this.append = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
+            this.CR = new System.Windows.Forms.CheckBox();
+            this.LF = new System.Windows.Forms.CheckBox();
+            this.panel2 = new System.Windows.Forms.Panel();
             this.send = new System.Windows.Forms.Button();
-            this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.SndHex = new System.Windows.Forms.RadioButton();
+            this.radioButton1 = new System.Windows.Forms.RadioButton();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -43,29 +48,24 @@
             this.panel1 = new System.Windows.Forms.Panel();
             this.RcvHex = new System.Windows.Forms.RadioButton();
             this.radioButton2 = new System.Windows.Forms.RadioButton();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.CR = new System.Windows.Forms.CheckBox();
-            this.LF = new System.Windows.Forms.CheckBox();
-            this.append = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
             this.SendGroup.SuspendLayout();
+            this.append.SuspendLayout();
+            this.panel2.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.Recive.SuspendLayout();
             this.panel1.SuspendLayout();
-            this.panel2.SuspendLayout();
-            this.append.SuspendLayout();
             this.SuspendLayout();
             // 
             // Logs
             // 
             this.Logs.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Logs.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.Logs.Location = new System.Drawing.Point(3, 16);
-            this.Logs.Margin = new System.Windows.Forms.Padding(2);
+            this.Logs.Location = new System.Drawing.Point(4, 19);
+            this.Logs.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Logs.Name = "Logs";
             this.Logs.ReadOnly = true;
-            this.Logs.Size = new System.Drawing.Size(461, 137);
+            this.Logs.Size = new System.Drawing.Size(615, 169);
             this.Logs.TabIndex = 0;
             this.Logs.Text = "";
             this.Logs.TextChanged += new System.EventHandler(this.Logs_TextChanged);
@@ -73,10 +73,10 @@
             // send_data
             // 
             this.send_data.Dock = System.Windows.Forms.DockStyle.Right;
-            this.send_data.Location = new System.Drawing.Point(-1, 0);
-            this.send_data.Margin = new System.Windows.Forms.Padding(2);
+            this.send_data.Location = new System.Drawing.Point(11, 0);
+            this.send_data.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.send_data.Name = "send_data";
-            this.send_data.Size = new System.Drawing.Size(308, 20);
+            this.send_data.Size = new System.Drawing.Size(409, 22);
             this.send_data.TabIndex = 1;
             this.send_data.KeyDown += new System.Windows.Forms.KeyEventHandler(this.send_data_KeyDown);
             this.send_data.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.send_data_KeyPress);
@@ -88,54 +88,116 @@
             this.SendGroup.Controls.Add(this.panel2);
             this.SendGroup.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.SendGroup.Enabled = false;
-            this.SendGroup.Location = new System.Drawing.Point(0, 237);
-            this.SendGroup.Margin = new System.Windows.Forms.Padding(2);
+            this.SendGroup.Location = new System.Drawing.Point(0, 292);
+            this.SendGroup.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.SendGroup.Name = "SendGroup";
-            this.SendGroup.Padding = new System.Windows.Forms.Padding(2);
-            this.SendGroup.Size = new System.Drawing.Size(467, 62);
+            this.SendGroup.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.SendGroup.Size = new System.Drawing.Size(623, 76);
             this.SendGroup.TabIndex = 2;
             this.SendGroup.TabStop = false;
             this.SendGroup.Text = "Send";
             // 
+            // append
+            // 
+            this.append.Controls.Add(this.label1);
+            this.append.Controls.Add(this.CR);
+            this.append.Controls.Add(this.LF);
+            this.append.Dock = System.Windows.Forms.DockStyle.Top;
+            this.append.Enabled = false;
+            this.append.Location = new System.Drawing.Point(3, 45);
+            this.append.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.append.Name = "append";
+            this.append.Size = new System.Drawing.Size(617, 27);
+            this.append.TabIndex = 8;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Dock = System.Windows.Forms.DockStyle.Right;
+            this.label1.Location = new System.Drawing.Point(465, 0);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(57, 17);
+            this.label1.TabIndex = 8;
+            this.label1.Text = "Append";
+            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+            // 
+            // CR
+            // 
+            this.CR.AutoSize = true;
+            this.CR.Dock = System.Windows.Forms.DockStyle.Right;
+            this.CR.Location = new System.Drawing.Point(522, 0);
+            this.CR.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.CR.Name = "CR";
+            this.CR.Size = new System.Drawing.Size(49, 27);
+            this.CR.TabIndex = 6;
+            this.CR.Text = "CR";
+            this.CR.UseVisualStyleBackColor = true;
+            // 
+            // LF
+            // 
+            this.LF.AutoSize = true;
+            this.LF.Dock = System.Windows.Forms.DockStyle.Right;
+            this.LF.Location = new System.Drawing.Point(571, 0);
+            this.LF.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.LF.Name = "LF";
+            this.LF.Size = new System.Drawing.Size(46, 27);
+            this.LF.TabIndex = 7;
+            this.LF.Text = "LF";
+            this.LF.UseVisualStyleBackColor = true;
+            // 
+            // panel2
+            // 
+            this.panel2.Controls.Add(this.send_data);
+            this.panel2.Controls.Add(this.send);
+            this.panel2.Controls.Add(this.SndHex);
+            this.panel2.Controls.Add(this.radioButton1);
+            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel2.Location = new System.Drawing.Point(3, 17);
+            this.panel2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.panel2.Name = "panel2";
+            this.panel2.Size = new System.Drawing.Size(617, 28);
+            this.panel2.TabIndex = 5;
+            // 
             // send
             // 
             this.send.Dock = System.Windows.Forms.DockStyle.Right;
-            this.send.Location = new System.Drawing.Point(307, 0);
-            this.send.Margin = new System.Windows.Forms.Padding(2);
+            this.send.Location = new System.Drawing.Point(420, 0);
+            this.send.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.send.Name = "send";
-            this.send.Size = new System.Drawing.Size(56, 23);
+            this.send.Size = new System.Drawing.Size(75, 28);
             this.send.TabIndex = 4;
             this.send.Text = "Send";
             this.send.UseVisualStyleBackColor = true;
             this.send.Click += new System.EventHandler(this.send_Click);
-            // 
-            // radioButton1
-            // 
-            this.radioButton1.AutoSize = true;
-            this.radioButton1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.radioButton1.Location = new System.Drawing.Point(410, 0);
-            this.radioButton1.Margin = new System.Windows.Forms.Padding(2);
-            this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(53, 23);
-            this.radioButton1.TabIndex = 3;
-            this.radioButton1.Text = "TEXT";
-            this.radioButton1.UseVisualStyleBackColor = true;
             // 
             // SndHex
             // 
             this.SndHex.AutoSize = true;
             this.SndHex.Checked = true;
             this.SndHex.Dock = System.Windows.Forms.DockStyle.Right;
-            this.SndHex.Location = new System.Drawing.Point(363, 0);
-            this.SndHex.Margin = new System.Windows.Forms.Padding(2);
+            this.SndHex.Location = new System.Drawing.Point(495, 0);
+            this.SndHex.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.SndHex.Name = "SndHex";
             this.SndHex.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.SndHex.Size = new System.Drawing.Size(47, 23);
+            this.SndHex.Size = new System.Drawing.Size(57, 28);
             this.SndHex.TabIndex = 2;
             this.SndHex.TabStop = true;
             this.SndHex.Text = "HEX";
             this.SndHex.UseVisualStyleBackColor = true;
             this.SndHex.CheckedChanged += new System.EventHandler(this.SndHex_CheckedChanged);
+            // 
+            // radioButton1
+            // 
+            this.radioButton1.AutoSize = true;
+            this.radioButton1.Dock = System.Windows.Forms.DockStyle.Right;
+            this.radioButton1.Location = new System.Drawing.Point(552, 0);
+            this.radioButton1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.radioButton1.Name = "radioButton1";
+            this.radioButton1.Size = new System.Drawing.Size(65, 28);
+            this.radioButton1.TabIndex = 3;
+            this.radioButton1.Text = "TEXT";
+            this.radioButton1.UseVisualStyleBackColor = true;
             // 
             // menuStrip1
             // 
@@ -145,21 +207,21 @@
             this.aboutToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 2, 0, 2);
-            this.menuStrip1.Size = new System.Drawing.Size(467, 24);
+            this.menuStrip1.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
+            this.menuStrip1.Size = new System.Drawing.Size(623, 28);
             this.menuStrip1.TabIndex = 4;
             this.menuStrip1.Text = "menuStrip1";
             // 
             // fileToolStripMenuItem
             // 
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(46, 24);
             this.fileToolStripMenuItem.Text = "&File";
             // 
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(64, 24);
             this.aboutToolStripMenuItem.Text = "&About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
@@ -167,11 +229,11 @@
             // 
             this.groupBox2.Controls.Add(this.HidDevices);
             this.groupBox2.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.groupBox2.Location = new System.Drawing.Point(0, 24);
-            this.groupBox2.Margin = new System.Windows.Forms.Padding(2);
+            this.groupBox2.Location = new System.Drawing.Point(0, 28);
+            this.groupBox2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Padding = new System.Windows.Forms.Padding(2);
-            this.groupBox2.Size = new System.Drawing.Size(467, 213);
+            this.groupBox2.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.groupBox2.Size = new System.Drawing.Size(623, 264);
             this.groupBox2.TabIndex = 5;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "HID Devices";
@@ -181,9 +243,10 @@
             this.HidDevices.Dock = System.Windows.Forms.DockStyle.Fill;
             this.HidDevices.FullRowSelect = true;
             this.HidDevices.HideSelection = false;
-            this.HidDevices.Location = new System.Drawing.Point(2, 15);
+            this.HidDevices.Location = new System.Drawing.Point(3, 17);
+            this.HidDevices.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.HidDevices.Name = "HidDevices";
-            this.HidDevices.Size = new System.Drawing.Size(463, 196);
+            this.HidDevices.Size = new System.Drawing.Size(617, 245);
             this.HidDevices.TabIndex = 0;
             this.HidDevices.UseCompatibleStateImageBehavior = false;
             this.HidDevices.SelectedIndexChanged += new System.EventHandler(this.HidDevices_SelectedIndexChanged);
@@ -193,9 +256,11 @@
             this.Recive.Controls.Add(this.Logs);
             this.Recive.Controls.Add(this.panel1);
             this.Recive.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.Recive.Location = new System.Drawing.Point(0, 299);
+            this.Recive.Location = new System.Drawing.Point(0, 368);
+            this.Recive.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.Recive.Name = "Recive";
-            this.Recive.Size = new System.Drawing.Size(467, 179);
+            this.Recive.Padding = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Recive.Size = new System.Drawing.Size(623, 220);
             this.Recive.TabIndex = 5;
             this.Recive.TabStop = false;
             this.Recive.Text = "Recive";
@@ -205,9 +270,10 @@
             this.panel1.Controls.Add(this.RcvHex);
             this.panel1.Controls.Add(this.radioButton2);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(3, 153);
+            this.panel1.Location = new System.Drawing.Point(4, 188);
+            this.panel1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(461, 23);
+            this.panel1.Size = new System.Drawing.Size(615, 28);
             this.panel1.TabIndex = 1;
             // 
             // RcvHex
@@ -215,11 +281,11 @@
             this.RcvHex.AutoSize = true;
             this.RcvHex.Checked = true;
             this.RcvHex.Dock = System.Windows.Forms.DockStyle.Right;
-            this.RcvHex.Location = new System.Drawing.Point(361, 0);
-            this.RcvHex.Margin = new System.Windows.Forms.Padding(2);
+            this.RcvHex.Location = new System.Drawing.Point(493, 0);
+            this.RcvHex.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.RcvHex.Name = "RcvHex";
             this.RcvHex.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.RcvHex.Size = new System.Drawing.Size(47, 23);
+            this.RcvHex.Size = new System.Drawing.Size(57, 28);
             this.RcvHex.TabIndex = 4;
             this.RcvHex.TabStop = true;
             this.RcvHex.Text = "HEX";
@@ -229,99 +295,41 @@
             // 
             this.radioButton2.AutoSize = true;
             this.radioButton2.Dock = System.Windows.Forms.DockStyle.Right;
-            this.radioButton2.Location = new System.Drawing.Point(408, 0);
-            this.radioButton2.Margin = new System.Windows.Forms.Padding(2);
+            this.radioButton2.Location = new System.Drawing.Point(550, 0);
+            this.radioButton2.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.radioButton2.Name = "radioButton2";
-            this.radioButton2.Size = new System.Drawing.Size(53, 23);
+            this.radioButton2.Size = new System.Drawing.Size(65, 28);
             this.radioButton2.TabIndex = 5;
             this.radioButton2.Text = "TEXT";
             this.radioButton2.UseVisualStyleBackColor = true;
             // 
-            // panel2
-            // 
-            this.panel2.Controls.Add(this.send_data);
-            this.panel2.Controls.Add(this.send);
-            this.panel2.Controls.Add(this.SndHex);
-            this.panel2.Controls.Add(this.radioButton1);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Location = new System.Drawing.Point(2, 15);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(463, 23);
-            this.panel2.TabIndex = 5;
-            // 
-            // CR
-            // 
-            this.CR.AutoSize = true;
-            this.CR.Dock = System.Windows.Forms.DockStyle.Right;
-            this.CR.Location = new System.Drawing.Point(384, 0);
-            this.CR.Name = "CR";
-            this.CR.Size = new System.Drawing.Size(41, 22);
-            this.CR.TabIndex = 6;
-            this.CR.Text = "CR";
-            this.CR.UseVisualStyleBackColor = true;
-            // 
-            // LF
-            // 
-            this.LF.AutoSize = true;
-            this.LF.Dock = System.Windows.Forms.DockStyle.Right;
-            this.LF.Location = new System.Drawing.Point(425, 0);
-            this.LF.Name = "LF";
-            this.LF.Size = new System.Drawing.Size(38, 22);
-            this.LF.TabIndex = 7;
-            this.LF.Text = "LF";
-            this.LF.UseVisualStyleBackColor = true;
-            // 
-            // append
-            // 
-            this.append.Controls.Add(this.label1);
-            this.append.Controls.Add(this.CR);
-            this.append.Controls.Add(this.LF);
-            this.append.Dock = System.Windows.Forms.DockStyle.Top;
-            this.append.Enabled = false;
-            this.append.Location = new System.Drawing.Point(2, 38);
-            this.append.Name = "append";
-            this.append.Size = new System.Drawing.Size(463, 22);
-            this.append.TabIndex = 8;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Dock = System.Windows.Forms.DockStyle.Right;
-            this.label1.Location = new System.Drawing.Point(340, 0);
-            this.label1.Margin = new System.Windows.Forms.Padding(3, 3, 3, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(44, 13);
-            this.label1.TabIndex = 8;
-            this.label1.Text = "Append";
-            this.label1.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
-            // 
             // SHT
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(467, 478);
+            this.ClientSize = new System.Drawing.Size(623, 588);
             this.Controls.Add(this.groupBox2);
             this.Controls.Add(this.SendGroup);
             this.Controls.Add(this.Recive);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
-            this.Margin = new System.Windows.Forms.Padding(2);
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.Name = "SHT";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "Simple Hid Terminal";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.SHT_FormClosing);
             this.Load += new System.EventHandler(this.SHT_Load);
             this.SendGroup.ResumeLayout(false);
+            this.append.ResumeLayout(false);
+            this.append.PerformLayout();
+            this.panel2.ResumeLayout(false);
+            this.panel2.PerformLayout();
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.Recive.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
-            this.append.ResumeLayout(false);
-            this.append.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
