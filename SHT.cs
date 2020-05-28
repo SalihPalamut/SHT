@@ -3,7 +3,9 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Deployment.Application;
 using System.Drawing;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
@@ -12,7 +14,7 @@ namespace SHT
 {
     public partial class SHT : Form
     {
-        #region "Initialize"
+        #region "Initialize & DeInitialize"
         HID UsbHid;
         Hid_Devices SelectedHid;
         public SHT()
@@ -57,7 +59,37 @@ namespace SHT
 
             fill_view();
         }
+        private void SHT_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            foreach (Hid_Devices Hd in UsbHid.HidDevices)
+            {
+                if (!Hd.WriteHandle.IsClosed) Hd.WriteHandle.Close();
+                if (!Hd.ReadHandle.IsClosed) Hd.ReadHandle.Close();
+            }
+        }
         #endregion
+        #region "User InterFace"
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            About abt = new About();
+            abt.ShowDialog();
+        }
+        private void HidDevices_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (HidDevices.SelectedItems.Count < 1) return;
+
+            ReadThread_Stop();
+
+            SelectedHid = UsbHid.HidDevices[HidDevices.Items.IndexOf(HidDevices.SelectedItems[0])];
+            SendGroup.Enabled = !SelectedHid.WriteHandle.IsClosed;
+            SendGroup.Enabled &= (SelectedHid.Caps.OutputReport > 0);
+            Logs.Text = "";
+
+            if (!ReadThread.IsBusy)
+                ReadThread.RunWorkerAsync();
+        }
+        #endregion
+        #region "Reading Data"
         #region "WndProc() "
         //Constant definitions for certain WM_DEVICECHANGE messages
         internal const uint WM_DEVICECHANGE = 0x0219;
@@ -89,11 +121,6 @@ namespace SHT
           //-------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
         #endregion
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            About abt = new About();
-            abt.ShowDialog();
-        }
         BackgroundWorker ReadThread;
         private void ReadThread_Stop()
         {
@@ -108,112 +135,6 @@ namespace SHT
             ReadThread.WorkerSupportsCancellation = true;
             ReadThread.DoWork += ReadThread_DoWork;
         }
-        private void HidDevices_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (HidDevices.SelectedItems.Count < 1) return;
-
-            ReadThread_Stop();
-
-            SelectedHid = UsbHid.HidDevices[HidDevices.Items.IndexOf(HidDevices.SelectedItems[0])];
-            SendGroup.Enabled = !SelectedHid.WriteHandle.IsClosed;
-            SendGroup.Enabled &= (SelectedHid.Caps.OutputReport > 0);
-            Logs.Text = "";
-
-            if (!ReadThread.IsBusy)
-                ReadThread.RunWorkerAsync();
-        }
-
-        // Accept Hex inputs
-        private void send_data_KeyPress(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == 8) return;
-
-            if (SndHex.Checked)
-            {
-                if (send_data.TextLength >= (SelectedHid.Caps.OutputReport - 1) * 3 + 2)
-                {
-                    e.Handled = true;
-                    return;
-                }
-                char c = e.KeyChar;
-                if ((c < '0' || c > '9') &&
-                    (c != ' ') && (c < 'A' || c > 'F') && (c < 'a' || c > 'f'))
-                {
-                    e.Handled = true;
-                }
-            }
-            else
-            {
-                if (send_data.TextLength > SelectedHid.Caps.OutputReport) e.Handled = true;
-            }
-
-
-        }
-
-        private void SndHex_CheckedChanged(object sender, EventArgs e)
-        {
-            send_data.Text = "";
-            append.Enabled = !SndHex.Checked;
-        }
-
-        private void send_Click(object sender, EventArgs e)
-        {
-            short Length = SelectedHid.Caps.OutputReport;
-
-            if (Length < 1) return;
-
-            byte[] data = new byte[Length];
-            data[0] = 0;
-
-            if (SndHex.Checked)
-            {
-                string[] split = send_data.Text.Split(' ');
-                int i = 0;
-
-                if (split.Length < Length)
-                    i = 1;
-
-                foreach (string hex in split)
-                {
-                    if (hex.Length < 3 && hex.Length > 0)
-                        data[i++] = Convert.ToByte(hex, 16);
-                }
-            }
-            else
-            {
-                int j = 0,n= Length;
-                if (send_data.Text.Length < Length)
-                {
-                    j = 1;
-                    n = send_data.Text.Length;
-                }
-   
-                for (int i = 0; i < n; i++)
-                    data[i + j] = (byte)send_data.Text[i];
-
-                if (CR.Checked && LF.Checked)
-                {
-                    data[Length - 2] = (byte)'\r';
-                    data[Length - 1] = (byte)'\n';
-                }
-                else
-                {
-                    if (CR.Checked) data[Length - 1] = (byte)'\r';
-                    if (LF.Checked) data[Length - 1] = (byte)'\n';
-                }
-            }
-            UsbHid.HidWrite(SelectedHid, data);
-        }
-
-        private void SHT_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            foreach (Hid_Devices Hd in UsbHid.HidDevices)
-            {
-                if (!Hd.WriteHandle.IsClosed) Hd.WriteHandle.Close();
-                if (!Hd.ReadHandle.IsClosed) Hd.ReadHandle.Close();
-            }
-        }
-
         delegate void Dump_Delegate(string Label, Byte[] array);
         void Dump(string Label, Byte[] array) //TextBox Kontrolünün Text ini değiştirecek metod
         {
@@ -315,6 +236,44 @@ namespace SHT
             //-------------------------------------------------------END CUT AND PASTE BLOCK-------------------------------------------------------------------------------------
             //-------------------------------------------------------------------------------------------------------------------------------------------------------------------
         }
+        private void Logs_TextChanged(object sender, EventArgs e)
+        {
+            Logs.Focus();
+            Logs.Select(Logs.Text.Length, 0);
+        }
+        #endregion
+        #region "Send Data Format and Sending Data"
+        // Accept Hex inputs
+        private void send_data_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == 8) return;
+
+            if (SndHex.Checked)
+            {
+                if(send_data.TextLength==0&&e.KeyChar==' ')
+                {
+                    e.Handled = true;
+                    return;
+                }
+
+                if (send_data.TextLength >= (SelectedHid.Caps.OutputReport - 1) * 3 + 2)
+                {
+                    e.Handled = true;
+                    return;
+                }
+                
+                char c = e.KeyChar;
+                if ((c < '0' || c > '9') &&
+                    (c != ' ') && (c < 'A' || c > 'F') && (c < 'a' || c > 'f'))
+                {
+                    e.Handled = true;
+                }
+            }
+            else
+            {
+                if (send_data.TextLength > SelectedHid.Caps.OutputReport) e.Handled = true;
+            }
+        }
         private void send_data_KeyDown(object sender, KeyEventArgs e)
         {
             if (e.KeyCode == Keys.Enter)
@@ -325,13 +284,72 @@ namespace SHT
 
         private void send_data_KeyUp(object sender, KeyEventArgs e)
         {
-
+            if (e.KeyData < Keys.D0) return;
+            if (!SndHex.Checked) return;
+            int a = send_data.TextLength;
+            string b = send_data.Text;
+            if (a < 3) return;
+            a -= 1;
+            if (b[a] != ' ' && b[a - 1] != ' ' && b[a - 2] != ' ')
+                b = b.Insert(a, " ");
+            send_data.Text = b;
+            send_data.Focus();
+            send_data.Select(send_data.Text.Length, 0);
         }
-
-        private void Logs_TextChanged(object sender, EventArgs e)
+        private void SndHex_CheckedChanged(object sender, EventArgs e)
         {
-            Logs.Focus();
-            Logs.Select(Logs.Text.Length, 0);
+            send_data.Text = "";
+            append.Enabled = !SndHex.Checked;
         }
+
+        private void send_Click(object sender, EventArgs e)
+        {
+            short Length = SelectedHid.Caps.OutputReport;
+
+            if (Length < 1) return;
+
+            byte[] data = new byte[Length];
+            data[0] = 0;
+
+            if (SndHex.Checked)
+            {
+                string[] split = send_data.Text.Split(' ');
+                int i = 0;
+
+                if (split.Length < Length)
+                    i = 1;
+
+                foreach (string hex in split)
+                {
+                    if (hex.Length < 3 && hex.Length > 0 && i < Length)
+                        data[i++] = Convert.ToByte(hex, 16);
+                }
+            }
+            else
+            {
+                int j = 0, n = Length;
+                if (send_data.Text.Length < Length)
+                {
+                    j = 1;
+                    n = send_data.Text.Length;
+                }
+
+                for (int i = 0; i < n; i++)
+                    data[i + j] = (byte)send_data.Text[i];
+
+                if (CR.Checked && LF.Checked)
+                {
+                    data[Length - 2] = (byte)'\r';
+                    data[Length - 1] = (byte)'\n';
+                }
+                else
+                {
+                    if (CR.Checked) data[Length - 1] = (byte)'\r';
+                    if (LF.Checked) data[Length - 1] = (byte)'\n';
+                }
+            }
+            UsbHid.HidWrite(SelectedHid, data);
+        }
+        #endregion
     }
 }

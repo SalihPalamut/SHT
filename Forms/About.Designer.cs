@@ -36,7 +36,7 @@
             // pictureBox1
             // 
             this.pictureBox1.Image = global::SHT.Properties.Resources.sht;
-            this.pictureBox1.Location = new System.Drawing.Point(12, 12);
+            this.pictureBox1.Location = new System.Drawing.Point(12, 15);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(128, 128);
             this.pictureBox1.SizeMode = System.Windows.Forms.PictureBoxSizeMode.StretchImage;
@@ -54,24 +54,25 @@
             this.about_txt.Name = "about_txt";
             this.about_txt.ReadOnly = true;
             this.about_txt.ShortcutsEnabled = false;
-            this.about_txt.Size = new System.Drawing.Size(253, 150);
+            this.about_txt.Size = new System.Drawing.Size(253, 159);
             this.about_txt.TabIndex = 2;
             this.about_txt.TabStop = false;
-            this.about_txt.Text = "Simple Hid Terminal\n\nSLHTech®\nCopy © 2020\n\nmailto:palamutsalih@gmail.com\nhttps://" +
-    "github.com/SalihPalamut/SHT";
+            this.about_txt.Text = "Simple Hid Terminal\n\nVerison : 1.0\n\nSLHTech®\nCopy © 2020\n\nmailto:palamutsalih@gma" +
+    "il.com\nhttps://github.com/SalihPalamut/SHT";
             this.about_txt.LinkClicked += new System.Windows.Forms.LinkClickedEventHandler(this.about_txt_LinkClicked);
             // 
             // About
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(399, 150);
+            this.ClientSize = new System.Drawing.Size(399, 159);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.about_txt);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
             this.Name = "About";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "About";
+            this.Load += new System.EventHandler(this.About_Load);
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.ResumeLayout(false);
 
